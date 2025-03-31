@@ -1,0 +1,150 @@
+{% extends 'shop/basic.html' %}
+{% block title %} Home {% endblock %}
+{% block css %}
+<style>
+    .col-md-3 {
+        display: inline-block;
+        margin-left: -4px;
+    }
+    .carousel-indicators .active {
+        background-color: blue;
+    }
+    .col-md-3 img {
+        width: 227px;
+        height: 222px;
+    }
+    body .carousel-indicator li {
+        background-color: blue;
+    }
+    body .carousel-indicators {
+        bottom: -35px;
+    }
+    .carousel-indicators li {
+        background-color: #7270fc;
+    }
+    body .carousel-control-prev-icon,
+    body .carousel-control-next-icon {
+        background-color: blue;
+    }
+    .carousel-control-prev,
+    .carousel-control-next {
+        top: auto;
+        bottom: auto;
+        padding-top: 222px;
+    }
+    div.c {
+        width: 1000px;
+        margin: 10px;
+        font-size: 20px;
+        position: relative;
+        left: 174px;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+{% load static %}
+<div class="c">&nbsp;
+    {% for product, range, nSlides in allProds %}
+    &nbsp;
+    <a href="/shop/search/?search={{ product.0.category }}" class="text-dark">
+        <i class="fas fa-stream"></i>
+        <span>{{ product.0.category }}</span>
+    </a>
+    {% endfor %}
+</div>
+
+<div class="container">
+    {% for product, range, nSlides in allProds %}
+    <h3 class="my-4">{{ product.0.category }}</h3>
+    <div class="row">
+        <div id="demo{{ forloop.counter }}" class="col carousel slide my-3" data-ride="carousel">
+            <ul class="carousel-indicators">
+                <li data-target="#demo{{ forloop.counter }}" data-slide-to="0" class="active"></li>
+                {% for i in range %}
+                <li data-target="#demo{{ forloop.parentloop.counter }}" data-slide-to="{{ i }}"></li>
+                {% endfor %}
+            </ul>
+            <div class="container carousel-inner no-padding">
+                <div class="carousel-item active">
+                    {% for i in product %}
+                    <div class="col-xs-3 col-sm-3 col-md-3">
+                        <div class="card align-items-center" style="width: 18rem;">
+                            <img src="/media/{{ i.image }}" class="card-img-top" alt="...">
+                            <div class="card-body">
+                                <h5 class="card-title" id="namepr{{ i.id }}">{{ i.product_name|slice:"0:20" }}...</h5>
+                                <h6 style="color: #ff0000">Rs. <i id="pricepr{{ i.id }}">{{ i.price }}</i>/-</h6>
+                                <p class="card-text">{{ i.desc|slice:"0:23" }}...</p>
+                                <span class="divpr">
+                                    <button class="btn btn-primary cart" data-id="{{ i.id }}">Add to Cart</button>
+                                </span>
+                                <a href="/shop/productView/{{ i.id }}">
+                                    <button class="btn btn-primary">Quick View</button>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% if forloop.counter|divisibleby:4 and forloop.counter > 0 and not forloop.last %}
+                </div>
+                <div class="carousel-item">
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <a class="carousel-control-prev" href="#demo{{ forloop.counter }}" data-slide="prev">
+            <span class="carousel-control-prev-icon"></span>
+        </a>
+        <a class="carousel-control-next" href="#demo{{ forloop.counter }}" data-slide="next">
+            <span class="carousel-control-next-icon"></span>
+        </a>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
+
+{% block js %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        alert("JavaScript is running!");
+    });
+    </script>
+    
+<script>
+// Initialize cart from localStorage
+let cart = JSON.parse(localStorage.getItem('cart')) || {};
+
+// Function to update cart display
+function updateCartDisplay() {
+    let totalItems = Object.values(cart).reduce((sum, item) => sum + item.qty, 0);
+    document.getElementById('cart').innerText = totalItems;
+}
+
+// Add event listeners to all "Add to Cart" buttons
+document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll('.cart').forEach(button => {
+        button.addEventListener('click', function () {
+            let productId = this.getAttribute("data-id");
+            let productName = document.getElementById('namepr' + productId).innerText;
+            let productPrice = parseInt(document.getElementById('pricepr' + productId).innerText);
+
+            console.log("Adding to cart:", productId, productName, productPrice); // Debugging log
+
+            if (cart[productId]) {
+                cart[productId].qty += 1;
+            } else {
+                cart[productId] = { name: productName, price: productPrice, qty: 1 };
+            }
+
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartDisplay();
+        });
+    });
+
+    updateCartDisplay();
+});
+
+// Debugging: Check cart data in console
+console.log("Loaded cart:", cart);
+</script>
+{% endblock %}
